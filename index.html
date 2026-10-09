@@ -221,14 +221,13 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
       <a href="#/exam" class="nav-item"><span class="ni">📋</span>套卷模考</a>
       <a href="#/wrong" class="nav-item"><span class="ni">❌</span>错题本</a>
       <a href="#/report" class="nav-item"><span class="ni">📊</span>学情报告</a>
-      <a href="#/users" class="nav-item" id="navUser"><span class="ni">👤</span>用户管理</a>
     </nav>
   </aside>
   <div class="main-area">
     <div class="topbar">
       <div class="wrap topbar-in">
         <div class="grade-switch" id="gradeSwitch"></div>
-        <div class="user-chip" id="userChip"></div>
+        <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
     <main id="view" class="wrap"></main>
@@ -4660,8 +4659,6 @@ function updateNavUser(){
   const name=store.curUser().name||'用户';
   const chip=$('#userChip');
   if(chip)chip.innerHTML='<div class="avatar">'+(name[0]||'?')+'</div>'+name;
-  const navU=$('#navUser');
-  if(navU)navU.innerHTML='<span class="ni">👤</span>'+name;
 }
 function render(hash){
   updateNavUser();
@@ -4711,28 +4708,6 @@ function vHome(){
     <div class="cta">
       <button class="btn" onclick="location.hash='#/practice'">开始分层练习</button>
       <button class="btn ghost" onclick="location.hash='#/exam'">进入套卷模考</button>
-    </div>
-  </section>
-
-  <section class="sect">
-    <div class="sect-h"><h2>芜湖中考考情速览</h2><span>数据来自安徽中考（芜湖使用省统一试卷）公开考情</span></div>
-    <div class="grid knowledge-grid">
-      <div class="card kn-card">
-        <h3>试卷结构 · 满分150 / 120分钟</h3>
-        <p>选择题 10 题×4 分=40 分；填空题 4 题×5 分=20 分；解答题 9 题共 90 分（8+8+8+8+10+10+12+12+14）。全卷 23 题，基础题约 60%，中档题约 20%，难题约 10%。</p>
-      </div>
-      <div class="card kn-card teal">
-        <h3>压轴题分布 · 四个失分点</h3>
-        <p>第 10 题：动点与极值；第 14 题：翻折、函数与几何结合；第 22–23 题：圆综合、几何综合、二次函数综合。145+ 的关键是「小题全对、压轴前两问必拿」。</p>
-      </div>
-      <div class="card kn-card warn">
-        <h3>最新命题风向</h3>
-        <p>代数推理与函数应用比重上升，几何证明难度下降；韦达定理纳入必考；新定义题侧重现场学习与迁移应用；阅卷更重视步骤规范与得分要点。</p>
-      </div>
-      <div class="card kn-card ok">
-        <h3>145+ 得分策略</h3>
-        <p>选择填空 60 分零失误（每题 4–5 分，错一题就难保 145）；解答题 85+/90：中档题规范作答拿满，压轴题确保前两问，冲刺第三问。</p>
-      </div>
     </div>
   </section>
 
