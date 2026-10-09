@@ -4588,10 +4588,11 @@ function vUsers(){
   const p=ptsGet();
   const msTag=k=>`<span class="tag" style="${p.ms[k]?'':'opacity:.55'}">连续 ${k} 天 · ${p.ms[k]?'已领':'未领'}</span>`;
   const msInfo=msTag(7)+msTag(30)+msTag(90);
+  const fixMojibake=s=>{if(!s)return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const fixed=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(fixed!==s&&fixed.match(/[\u4e00-\u9fa5]/))return fixed;}catch(e){}return s;};
   const logRows=p.logs.slice().reverse().slice(0,20).map(l=>{
     const tag=l.t==='checkin'?'签到':l.t==='milestone'?'里程碑':l.t==='clear'?'清零':'刷题';
     const ptsTxt=l.t==='clear'?('<span style="color:#b3261e">清零（原 '+l.before+'）</span>'):('<span style="color:var(--primary-d)">+'+l.pts+'</span>');
-    return '<div style="padding:4px 0 px;border-bottom:px dashed var(--line,#e3e8f0);display:flex;justify-content:space-between;gap:8px"><span>['+tag+'] '+esc(l.note||'')+'</span><span style="white-space:nowrap">'+ptsTxt+'</span></div><div style="font-size:11px;color:var(--sub);padding-bottom:5px">'+fmtDate(l.date)+'</div>';
+    return '<div style="padding:4px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:8px"><span>['+tag+'] '+esc(fixMojibake(l.note||''))+'</span><span style="white-space:nowrap">'+ptsTxt+'</span></div><div style="font-size:11px;color:var(--sub);padding-bottom:5px">'+fmtDate(l.date)+'</div>';
   }).join('')||'<div style="color:var(--sub);font-size:12.5px">暂无积分记录</div>';
   html+=`<div class="card" style="max-width:680px;margin-bottom:16px">
     <div style="font-weight:600;font-size:14px;margin-bottom:8px">积分中心 <span style="font-weight:400;color:var(--sub);font-size:12px">当前用户：${esc(cur.name)}</span></div>
