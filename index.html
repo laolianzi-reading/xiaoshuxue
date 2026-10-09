@@ -3589,7 +3589,7 @@ const store={
     this.save();
     return this.cur;},
   _fixMojibake(){
-    const fix=s=>{if(typeof s!=='string'||!s)return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s&&/[\u4e00-\u9fa5]/.test(f))return f;}catch(e){}return s;};
+    const fix=s=>{if(typeof s!=='string'||!s)return s;if(!/[\u00c0-\u00ff]/.test(s))return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s)return f;}catch(e){}return s;};
     const walk=o=>{if(typeof o==='string')return fix(o);if(Array.isArray(o))return o.map(walk);if(o&&typeof o==='object'){for(const k in o)o[k]=walk(o[k]);}return o;};
     walk(this.data);
   },
@@ -5129,7 +5129,7 @@ function renderCalcQuiz(){
   D.calc.qs.forEach((q,i)=>{
     const bg=q.l==='普通'?'#e8f4ff':q.l==='提优'?'#fff4e0':'#ffe8e8';
     const fg=q.l==='普通'?'#1555a6':q.l==='提优'?'#b06a00':'#c0392b';
-    html+='<div class="card" style="margin-bottom:10px"><div style="font-size:13px;color:var(--sub);margin-bottom:6px">第 '+(i+1)+' 题 <span style="background:'+bg+';color:'+fg+';padding:2px 8px;border-radius:4px;font-size:12px">'+q.l+'</span></div><div style="margin-bottom:8px">'+q.q+'</div><input type="text" id="calcAns'+i+'" placeholder="输入答案" style="width:100%;padding:8px;border:px solid #ddd;border-radius:6px"></div>';
+    html+='<div class="card" style="margin-bottom:10px"><div style="font-size:13px;color:var(--sub);margin-bottom:6px">第 '+(i+1)+' 题 <span style="background:'+bg+';color:'+fg+';padding:2px 8px;border-radius:4px;font-size:12px">'+q.l+'</span></div><div style="margin-bottom:8px">'+fmtMath(q.q)+'</div><input type="text" id="calcAns'+i+'" placeholder="输入答案" style="width:100%;padding:8px;border:px solid #ddd;border-radius:6px"></div>';
   });
   box.innerHTML=html;
 }
@@ -5150,11 +5150,11 @@ function renderCalcReview(){
     const fg=q.l==='普通'?'#1555a6':q.l==='提优'?'#b06a00':'#c0392b';
     html+='<div class="card" style="margin-bottom:10px;border-left:4px solid '+(ok?'#2e9e5b':'#c0392b')+'">';
     html+='<div style="font-size:13px;color:var(--sub);margin-bottom:6px">第 '+(i+1)+' 题 <span style="background:'+bg+';color:'+fg+';padding:2px 8px;border-radius:4px;font-size:12px">'+q.l+'</span> <span style="float:right;font-weight:700;color:'+(ok?'#2e9e5b':'#c0392b')+'">'+(ok?'✓ 正确':'✗ 错误')+'</span></div>';
-    html+='<div style="margin-bottom:8px">'+q.q+'</div>';
+    html+='<div style="margin-bottom:8px">'+fmtMath(q.q)+'</div>';
     html+='<div style="font-size:13.5px;margin-bottom:6px">你的作答：<b style="color:'+(ok?'#2e9e5b':'#c0392b')+'">'+(userAns||'（未作答）')+'</b></div>';
-    html+='<div style="font-size:13.5px;margin-bottom:6px">参考答案：<b>'+q.a+'</b></div>';
+    html+='<div style="font-size:13.5px;margin-bottom:6px">参考答案：<b>'+fmtMath(q.a)+'</b></div>';
     html+='<div style="font-size:13px;color:var(--sub);margin-bottom:6px;line-height:1.7">解题步骤：'+fmtCalcSteps(q.p)+'</div>';
-    if(q.e) html+='<div style="font-size:13px;color:#b06a00;margin-top:4px">易错点：'+q.e+'</div>';
+    if(q.e) html+='<div style="font-size:13px;color:#b06a00;margin-top:4px">易错点：'+fmtMath(q.e)+'</div>';
     html+='</div>';
   });
   box.innerHTML=html;
@@ -5766,7 +5766,7 @@ function mergeUsers(local,remote){
   // calc: 取 lastDate 更新
   if(remote.calc && (!base.calc || (remote.calc.lastDate||'') > (base.calc.lastDate||''))) base.calc=remote.calc;
   // 全局修复历史乱码字符串
-  const fixStr=s=>{if(typeof s!=='string'||!s)return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s&&/[\u4e00-\u9fa5]/.test(f))return f;}catch(e){}return s;};
+  const fixStr=s=>{if(typeof s!=='string'||!s)return s;if(!/[\u00c0-\u00ff]/.test(s))return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s)return f;}catch(e){}return s;};
   const walk=o=>{if(typeof o==='string')return fixStr(o);if(Array.isArray(o))return o.map(walk);if(o&&typeof o==='object'){for(const k in o)o[k]=walk(o[k]);}return o;};
   walk(base);
   return base;
@@ -5789,6 +5789,7 @@ async function ghPush(confirmFirst){
       merged=local;
     }
     merged.avatar=store.curUser().avatar||merged.avatar||'';
+    ghLog(merged.avatar?'头像已包含（'+Math.round(merged.avatar.length/1024)+'KB）':'未设置头像');
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(merged,null,2))));
     const body={message:'sync '+new Date().toISOString(), content, branch:'main'};
     if(remote) body.sha=remote.sha;
@@ -5820,7 +5821,8 @@ async function ghPull(confirmFirst){
     store.data.data[store.data.active]=merged;
     store.cur=merged;
     D=merged;
-    if(merged.avatar) store.curUser().avatar=merged.avatar;
+    if(merged.avatar){store.curUser().avatar=merged.avatar;ghLog('云端头像已同步');}
+    else{ghLog('云端数据无头像字段');}
     store.save();
     updateNavUser();
     ghLog('拉取合并完成，本机已更新','#2e9e5b');
