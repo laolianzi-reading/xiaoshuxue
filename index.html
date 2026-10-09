@@ -3584,9 +3584,15 @@ const store={
     this.data.data=this.data.data||{};
     if(!this.data.data[this.data.active])this.data.active=this.data.users[0].id;
     this.data.data[this.data.active]=this.data.data[this.data.active]||this.emptyUser();
+    this._fixMojibake();
     this.cur=this.data.data[this.data.active];
     this.save();
     return this.cur;},
+  _fixMojibake(){
+    const fix=s=>{if(typeof s!=='string'||!s)return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s&&/[\u4e00-\u9fa5]/.test(f))return f;}catch(e){}return s;};
+    const walk=o=>{if(typeof o==='string')return fix(o);if(Array.isArray(o))return o.map(walk);if(o&&typeof o==='object'){for(const k in o)o[k]=walk(o[k]);}return o;};
+    walk(this.data);
+  },
   save(){localStorage.setItem(DBK2,JSON.stringify(this.data));},
   reset(){const c=this.cur,e=this.emptyUser();c.profile=e.profile;c.records=e.records;c.wrongs=e.wrongs;c.sessions=e.sessions;if('md' in c)delete c.md;if('lastSet' in c)delete c.lastSet;this.save();},
   listUsers(){return this.data.users.slice();},
