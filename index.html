@@ -4567,7 +4567,14 @@ function vUsers(){
   const cnt=u=>{const d=store.data.data[u.id]||{};const n=(d.records||[]).length+(d.sessions||[]).length;const w=Object.keys(d.wrongs||{}).length;return n+' 条记录 · '+w+' 道错题';};
   let html=`<h1 class="page-title">用户管理</h1><p class="page-sub">多用户学情数据独立隔离；支持新增/删除用户、导出/导入 JSON，配置 GitHub 云同步后可跨设备自动合并。</p>
   <div class="card" style="max-width:680px;margin-bottom:16px">
-    <div style="font-weight:600;font-size:14px;margin-bottom:10px">当前用户：<b style="color:var(--primary-d)">${esc(cur.name)}</b></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+      <div id="curAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#af52de,#5ac8fa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:600;overflow:hidden;flex-shrink:0">${esc(cur.name[0]||'?')}</div>
+      <div>
+        <div style="font-weight:600;font-size:16px">${esc(cur.name)}</div>
+        <div style="font-size:12.5px;color:var(--sub);margin-top:2px">点击右侧按钮上传头像（自动压缩为64×64小图）</div>
+      </div>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin-left:auto">上传头像<input type="file" accept="image/*" style="display:none" onchange="avatarUpload(this)"></label>
+    </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <input class="q-input" id="newUserName" placeholder="输入新用户姓名" style="flex:1;min-width:180px">
       <button class="btn btn-primary" onclick="userAdd()">新增用户</button>
@@ -4636,6 +4643,23 @@ function vUsers(){
   </div>`;
   V.innerHTML=html;
 }
+function avatarUpload(inp){
+  const f=inp.files&&inp.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=64;c.height=64;
+      const ctx=c.getContext('2d');
+      const s=Math.min(img.width,img.height);
+      ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,64,64);
+      store.curUser().avatar=c.toDataURL('image/png');
+      store.save();updateNavUser();toast('头像已更新');render('users');
+    };
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(f);
+}
 function userAdd(){const inp=$('#newUserName');const name=(inp&&inp.value||'').trim();const uid=store.addUser(name);store.switchUser(uid);toast('已新增并切换用户');render('users');}
 function userSwitch(id){if(store.switchUser(id)){toast('已切换到该用户');render((location.hash||'#/home').replace('#/',''));}}
 function userDel(id){
@@ -4665,9 +4689,13 @@ function userImport(inp){
   reader.readAsText(f,'utf-8');
 }
 function updateNavUser(){
-  const name=store.curUser().name||'用户';
+  const u=store.curUser();
+  const name=u.name||'用户';
+  const av=u.avatar||'';
   const chip=$('#userChip');
-  if(chip)chip.innerHTML='<div class="avatar">'+(name[0]||'?')+'</div>'+name;
+  if(chip)chip.innerHTML=av?'<div class="avatar" style="padding:0;overflow:hidden"><img src="'+av+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>'+'<span>'+name+'</span>':'<div class="avatar">'+(name[0]||'?')+'</div>'+'<span>'+name+'</span>';
+  const ca=$('#curAvatar');
+  if(ca)ca.innerHTML=av?'<img src="'+av+'" style="width:100%;height:100%;object-fit:cover">':(name[0]||'?');
 }
 function render(hash){
   updateNavUser();
