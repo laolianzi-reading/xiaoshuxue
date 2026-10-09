@@ -5502,8 +5502,9 @@ function ghLog(msg,color){
 }
 function ghCfg(){
   const tok=localStorage.getItem('xsx_gh_token')||'';
-  const uid=store.data.active;
-  return {tok, owner:'laolianzi-reading', repo:'xiaoshuxue-data', path:'users/'+uid+'.json', uid};
+  const u=store.curUser();
+  const name=(u.name||'').trim()||'默认用户';
+  return {tok, owner:'laolianzi-reading', repo:'xiaoshuxue-data', path:'users/'+encodeURIComponent(name)+'.json', name, uid:u.id};
 }
 function ghSaveToken(){localStorage.setItem('xsx_gh_token',$('#inGhToken').value.trim());toast('Token 已保存');render('users');}
 async function ghTest(){
