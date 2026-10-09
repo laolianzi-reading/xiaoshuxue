@@ -5718,7 +5718,10 @@ async function ghGetRemote(c){
   if(r.status===404) return null;
   if(!r.ok) throw new Error('HTTP '+r.status);
   const j=await r.json();
-  const data=JSON.parse(atob(j.content.replace(/\n/g,'')));
+  const bin=atob(j.content.replace(/\n/g,''));
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  const data=JSON.parse(new TextDecoder('utf-8').decode(bytes));
   return {sha:j.sha, data};
 }
 function mergeUsers(local,remote){
