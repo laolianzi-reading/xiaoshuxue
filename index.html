@@ -5761,6 +5761,10 @@ function mergeUsers(local,remote){
   }
   // calc: 取 lastDate 更新
   if(remote.calc && (!base.calc || (remote.calc.lastDate||'') > (base.calc.lastDate||''))) base.calc=remote.calc;
+  // 全局修复历史乱码字符串
+  const fixStr=s=>{if(typeof s!=='string'||!s)return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s&&/[\u4e00-\u9fa5]/.test(f))return f;}catch(e){}return s;};
+  const walk=o=>{if(typeof o==='string')return fixStr(o);if(Array.isArray(o))return o.map(walk);if(o&&typeof o==='object'){for(const k in o)o[k]=walk(o[k]);}return o;};
+  walk(base);
   return base;
 }
 async function ghPush(confirmFirst){
