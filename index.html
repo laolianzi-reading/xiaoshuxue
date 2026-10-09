@@ -5820,6 +5820,7 @@ async function ghPull(confirmFirst){
     store.data.data[store.data.active]=merged;
     store.cur=merged;
     D=merged;
+    if(merged.avatar) store.curUser().avatar=merged.avatar;
     store.save();
     updateNavUser();
     ghLog('拉取合并完成，本机已更新','#2e9e5b');
