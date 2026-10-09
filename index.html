@@ -127,6 +127,7 @@ p.page-sub{color:var(--sub);font-size:14px;margin-bottom:20px}
 .q-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
 .q-stem{font-size:17px;line-height:1.8;margin-bottom:20px;white-space:pre-wrap}
 .q-stem .qno{display:inline-block;background:var(--primary);color:#fff;border-radius:8px;font-size:14px;padding:2px 10px;margin-right:8px;vertical-align:2px}
+sup{font-size:.65em;vertical-align:super;line-height:0}
 .opts{display:grid;gap:10px}
 .opt{border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;font-size:15px;transition:.12s;display:flex;gap:10px;align-items:flex-start;background:#fff}
 .opt:hover{border-color:var(--primary)}
@@ -3558,6 +3559,8 @@ const BANK={
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SUP_MAP={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9'};
+const fmtMath=s=>{if(!s)return '';let h=esc(s);for(const k in SUP_MAP)h=h.split(k).join('<sup>'+SUP_MAP[k]+'</sup>');return h;};
 const fmtDate=ts=>{const d=new Date(ts);return (d.getMonth()+1)+'月'+d.getDate()+'日 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
 let toastTimer=null;
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2200);}
@@ -5330,7 +5333,7 @@ function vQuiz(){
   <span class="tag">${esc(q.k||'')}</span>${q.h?'<span class="tag hot">芜湖高频</span>':''}${q.trap?'<span class="tag" style="background:#fbecec;color:#b03030">陷阱：'+esc(q.trap)+'</span>':''}`;
   let body='';
   if(q.t==='c'){
-    body=`<div class="opts">${(q.o||[]).map((o,i)=>`<div class="opt ${ans.v==='ABCD'[i]?'on':''}" onclick="pickOpt(${i})"><span class="k">${'ABCD'[i]}.</span><span>${esc(String(o).replace(/^[A-D][.、．]\s*/,''))}</span></div>`).join('')}</div>`;
+    body=`<div class="opts">${(q.o||[]).map((o,i)=>`<div class="opt ${ans.v==='ABCD'[i]?'on':''}" onclick="pickOpt(${i})"><span class="k">${'ABCD'[i]}.</span><span>${fmtMath(String(o).replace(/^[A-D][.、．]\s*/,''))}</span></div>`).join('')}</div>`;
   }else if(q.t==='f'){
     body=`<input class="q-input" id="fillInput" placeholder="请输入答案（如：x≥2、10^5、45°）" value="${esc(ans.v||'')}" oninput="saveFill(this.value)">
     <div style="font-size:12px;color:var(--sub);margin:9px 0 2px">符号辅助（点击插入；也可用 ^ 表示次方，如 10^5）</div>${symPadHtml()}`;
@@ -5347,7 +5350,7 @@ function vQuiz(){
   </div>
   <div class="card q-card">
     <div class="q-meta">${meta}</div>
-    <div class="q-stem"><span class="qno">${idx+1}</span>${esc(q.q)}</div>
+    <div class="q-stem"><span class="qno">${idx+1}</span>${fmtMath(q.q)}</div>
     ${body}
     <div class="quiz-nav">
       <button class="btn btn-ghost" ${idx===0?'disabled':''} onclick="navQ(-1)">上一题</button>
@@ -5450,19 +5453,19 @@ function renderResult(out){
         <span class="tag">${esc(q.k||'')}</span>
         <span style="margin-left:auto;font-size:13px;color:var(--sub)">得分 <b id="resScore-${i}">${g.score}</b>/${g.max}</span>
       </div>
-      <div class="q">${i+1}. ${esc(q.q)}</div>
+      <div class="q">${i+1}. ${fmtMath(q.q)}</div>
       ${q.t==='a'?`<div class="res-pts" id="resPts-${i}" style="margin-top:10px;padding:10px 12px;background:var(--bg,#f7f9fc);border-radius:10px">
         <div style="font-size:13px;font-weight:600;margin-bottom:6px">对照得分要点自评（提交后计入得分）</div>
         ${(q.p||[]).map((p,pi)=>`<label class="pt-check"><input type="checkbox" data-pt="${pi}" ${ans.ptsPts&&ans.ptsPts.includes(pi)?'checked':''} onchange="resSelfPts(${i},${pi},this.checked)"><span>${esc(p[0])}</span><span class="pv">${p[1]} 分</span></label>`).join('')}
         <div style="font-size:12.5px;color:var(--sub);margin-top:6px">自评合计：<b id="resSum-${i}" style="color:var(--primary-d)">${ans.pts||0}</b> / ${g.max} 分</div>
       </div>`:''}
       ${q.t==='a'?'':`<div class="res-line">你的答案：<b>${esc(yourAns)}</b></div>`}
-      ${g.ok?'':`<div class="res-line">正确答案：<b style="color:var(--ok)">${esc(q.a)}</b></div>`}
+      ${g.ok?'':`<div class="res-line">正确答案：<b style="color:var(--ok)">${fmtMath(q.a)}</b></div>`}
       <details class="detail-box"><summary>查看解析（解题步骤 · 得分要点 · 易错点）</summary>
         <div class="body">
-          <div><b>解题过程：</b><br>${esc(q.s||'')}</div>
-          ${q.p&&q.p.length?`<div class="pts"><b>得分要点（严格对标中考阅卷）：</b><ul>${q.p.map(p=>`<li>${esc(p[0])}（${p[1]} 分）</li>`).join('')}</ul></div>`:''}
-          ${q.e?`<div style="margin-top:6px"><b>高频易错：</b>${esc(q.e)}</div>`:''}
+          <div><b>解题过程：</b><br>${fmtMath(q.s||'')}</div>
+          ${q.p&&q.p.length?`<div class="pts"><b>得分要点（严格对标中考阅卷）：</b><ul>${q.p.map(p=>`<li>${fmtMath(p[0])}（${p[1]} 分）</li>`).join('')}</ul></div>`:''}
+          ${q.e?`<div style="margin-top:6px"><b>高频易错：</b>${fmtMath(q.e)}</div>`:''}
         </div>
       </details>
     </div>`;
@@ -5520,16 +5523,16 @@ function vWrong(){
           </div>
           <span style="font-size:12px;color:var(--sub)">错 ${w.n} 次 · ${fmtDate(w.last)}</span>
         </div>
-        <div class="q">${esc(q.q.length>90?q.q.slice(0,90)+'……':q.q)}</div>
+        <div class="q">${fmtMath(q.q.length>90?q.q.slice(0,90)+"……":q.q)}</div>
         <div class="acts">
           <button class="btn btn-primary btn-sm" onclick="redoOne('${q.id}')">重做此题</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleWrongDetail('${q.id}')">看解析</button>
           <button class="btn btn-ghost btn-sm" onclick="markMaster('${q.id}')">标记掌握</button>
         </div>
         <div id="wd-${q.id}" style="display:none;margin-top:10px;padding-top:10px;border-top:px dashed var(--line);font-size:13.5px;line-height:1.85">
-          <div><b>正确答案：</b>${esc(q.a)}</div>
-          <div style="margin-top:4px"><b>解析：</b>${esc(q.s||'')}</div>
-          ${q.e?`<div style="margin-top:4px"><b>易错：</b>${esc(q.e)}</div>`:''}
+          <div><b>正确答案：</b>${fmtMath(q.a)}</div>
+          <div style="margin-top:4px"><b>解析：</b>${fmtMath(q.s||'')}</div>
+          ${q.e?`<div style="margin-top:4px"><b>易错：</b>${fmtMath(q.e)}</div>`:''}
         </div>
       </div>`;
     });
