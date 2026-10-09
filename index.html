@@ -4653,7 +4653,9 @@ function avatarUpload(inp){
       const ctx=c.getContext('2d');
       const s=Math.min(img.width,img.height);
       ctx.drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,64,64);
-      store.curUser().avatar=c.toDataURL('image/png');
+      const av=c.toDataURL('image/png');
+      store.curUser().avatar=av;
+      store.cur.avatar=av;
       store.save();updateNavUser();toast('头像已更新');render('users');
     };
     img.src=reader.result;
@@ -5759,6 +5761,8 @@ function mergeUsers(local,remote){
       base.points.logs=Object.values(lm).sort((a,b)=>(a.date||0)-(b.date||0));
     }
   }
+  // avatar: 取最新的
+  if(remote.avatar) base.avatar=remote.avatar;
   // calc: 取 lastDate 更新
   if(remote.calc && (!base.calc || (remote.calc.lastDate||'') > (base.calc.lastDate||''))) base.calc=remote.calc;
   // 全局修复历史乱码字符串
@@ -5784,6 +5788,7 @@ async function ghPush(confirmFirst){
       ghLog('云端无此用户数据，首次上传');
       merged=local;
     }
+    merged.avatar=store.curUser().avatar||merged.avatar||'';
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(merged,null,2))));
     const body={message:'sync '+new Date().toISOString(), content, branch:'main'};
     if(remote) body.sha=remote.sha;
@@ -5814,7 +5819,9 @@ async function ghPull(confirmFirst){
     const merged=mergeUsers(store.cur,remote.data);
     store.data.data[store.data.active]=merged;
     store.cur=merged;
+    D=merged;
     store.save();
+    updateNavUser();
     ghLog('拉取合并完成，本机已更新','#2e9e5b');
     toast('已从云端拉取');
     render('users');
