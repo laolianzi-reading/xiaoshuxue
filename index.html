@@ -4568,7 +4568,7 @@ function vUsers(){
   let html=`<h1 class="page-title">用户管理</h1><p class="page-sub">多用户学情数据独立隔离；支持新增/删除用户、导出/导入 JSON，配置 GitHub 云同步后可跨设备自动合并。</p>
   <div class="card" style="max-width:680px;margin-bottom:16px">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
-      <div id="curAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#af52de,#5ac8fa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:600;overflow:hidden;flex-shrink:0">${esc(cur.name[0]||'?')}</div>
+      <div id="curAvatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#af52de,#5ac8fa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:600;overflow:hidden;flex-shrink:0">${cur.avatar?'<img src="'+cur.avatar+'" style="width:100%;height:100%;object-fit:cover">':esc(cur.name[0]||'?')}</div>
       <div>
         <div style="font-weight:600;font-size:16px">${esc(cur.name)}</div>
         <div style="font-size:12.5px;color:var(--sub);margin-top:2px">点击右侧按钮上传头像（自动压缩为64×64小图）</div>
