@@ -5457,7 +5457,9 @@ function vReport(){
 
 /* ============ 设置 ============ */
 function vSettings(){
-  V.innerHTML=`<h1 class="page-title">学习设置</h1><p class="page-sub">学习数据仅保存在本机浏览器 localStorage 中，不上传云端、不对外泄露。</p>
+  const ghToken = localStorage.getItem('xsx_gh_token')||'';
+  const ghStatus = ghToken ? '<span style="color:var(--ok,#2e9e5b)">已连接</span>' : '<span style="color:var(--sub)">未连接</span>';
+  V.innerHTML=`<h1 class="page-title">学习设置</h1><p class="page-sub">学习数据默认保存在本机浏览器 localStorage；配置 GitHub 云同步后可跨设备同步。</p>
   <div class="card" style="max-width:560px">
     <div style="margin-bottom:16px"><label style="font-size:13px;font-weight:600">学生姓名（仅本地显示）</label>
       <input class="q-input" id="inName" style="margin-top:6px" placeholder="选填" value="${esc(D.profile.name||'')}"></div>
@@ -5473,8 +5475,148 @@ function vSettings(){
     <div style="font-size:12.5px;color:var(--sub);line-height:1.8">
       工具说明：题库为自主原创变式题，仅借鉴《实验班提优训练》《学霸》两套教辅的章节体系、难度梯度与出题逻辑，不含任何教辅原题；内容适配芜湖中考（安徽统一命题）考情。
     </div>
+  </div>
+
+  <div class="card" style="max-width:560px;margin-top:16px">
+    <h3 style="margin:0 0 6px;font-size:16px">云同步（GitHub 私有仓库）</h3>
+    <p style="font-size:12.5px;color:var(--sub);margin:0 0 14px">状态：${ghStatus}　当前用户：<b>${esc(store.curUser().name||'未命名')}</b>（每用户独立一份云端数据）</p>
+    <div style="margin-bottom:12px"><label style="font-size:13px;font-weight:600">GitHub Personal Access Token (PAT)</label>
+      <input class="q-input" id="inGhToken" type="password" style="margin-top:6px" placeholder="gho_xxxxx（仅本机存储）" value="${ghToken}"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-ghost btn-sm" onclick="ghSaveToken()">保存 Token</button>
+      <button class="btn btn-ghost btn-sm" onclick="ghTest()">测试连接</button>
+      <button class="btn btn-sm" onclick="ghPush(true)" id="btnPush">同步到云端（上传合并）</button>
+      <button class="btn btn-sm" onclick="ghPull(true)" id="btnPull">从云端拉取（合并到本机）</button>
+    </div>
+    <div id="ghLog" style="font-size:12.5px;color:var(--sub);line-height:1.7;max-height:140px;overflow:auto;border-top:1px solid var(--line,#eee);padding-top:10px"></div>
+    <div style="font-size:12px;color:var(--sub);margin-top:10px;line-height:1.7">
+      使用说明：在 GitHub → Settings → Developer settings → Personal access tokens (classic) 生成，勾选 <code>repo</code> 权限，仅授权私有仓库 <code>xiaoshuxue-data</code>。同步前请在两台设备上分别点一次"上传合并"；记录/错题/积分会自动按时间戳合并，不会丢失。
+    </div>
   </div>`;
   const inp=$('#inName');if(inp)inp.onchange=()=>{D.profile.name=inp.value.trim();store.save();toast('已保存');};
+  const tok=$('#inGhToken');if(tok)tok.onchange=()=>{localStorage.setItem('xsx_gh_token',tok.value.trim());toast('Token 已保存');};
+}
+function ghLog(msg,color){
+  const el=$('#ghLog');if(!el)return;
+  const t=new Date().toLocaleTimeString();
+  el.innerHTML=`<div style="color:${color||'var(--sub)'}">[${t}] ${esc(msg)}</div>`+el.innerHTML;
+}
+function ghCfg(){
+  const tok=localStorage.getItem('xsx_gh_token')||'';
+  const uid=store.data.active;
+  return {tok, owner:'laolianzi-reading', repo:'xiaoshuxue-data', path:'users/'+uid+'.json', uid};
+}
+function ghSaveToken(){localStorage.setItem('xsx_gh_token',$('#inGhToken').value.trim());toast('Token 已保存');vSettings();}
+async function ghTest(){
+  const c=ghCfg();if(!c.tok){toast('请先填写 Token');return;}
+  ghLog('测试连接中…');
+  try{
+    const r=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}`,{headers:{Authorization:'token '+c.tok,Accept:'application/vnd.github+json'}});
+    if(r.status===200){ghLog('连接成功：仓库可访问','#2e9e5b');toast('连接成功');}
+    else{const j=await r.json().catch(()=>({}));ghLog('连接失败：'+r.status+' '+(j.message||''),'#c0392b');toast('连接失败');}
+  }catch(e){ghLog('网络错误：'+e.message,'#c0392b');}
+}
+async function ghGetRemote(c){
+  // 返回 {sha, data} 或 null（远程不存在）
+  const r=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${c.path}`,{headers:{Authorization:'token '+c.tok,Accept:'application/vnd.github+json'}});
+  if(r.status===404) return null;
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  const data=JSON.parse(atob(j.content.replace(/\n/g,'')));
+  return {sha:j.sha, data};
+}
+function mergeUsers(local,remote){
+  const base=JSON.parse(JSON.stringify(local));
+  // records 按 ts+qid 去重合并
+  const rm={};
+  (remote.records||[]).forEach(r=>rm[r.ts+'|'+r.qid]=r);
+  (base.records||[]).forEach(r=>rm[r.ts+'|'+r.qid]=r);
+  base.records=Object.values(rm).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  // sessions 按 ts
+  const sm={};
+  (remote.sessions||[]).forEach(s=>sm[s.ts]=s);
+  (base.sessions||[]).forEach(s=>sm[s.ts]=s);
+  base.sessions=Object.values(sm).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  // wrongs 按 qid，n/last 取 max
+  const wm={};
+  Object.keys(remote.wrongs||{}).forEach(k=>wm[k]={...remote.wrongs[k]});
+  Object.keys(base.wrongs||{}).forEach(k=>{
+    const r=wm[k]||{n:0,last:0,ok:false};
+    const l=base.wrongs[k];
+    wm[k]={n:Math.max(r.n||0,l.n||0),last:Math.max(r.last||0,l.last||0),ok:!!(r.ok||l.ok)};
+  });
+  base.wrongs=wm;
+  // points: total/streak 取 max，logs 合并
+  if(remote.points){
+    if(!base.points) base.points=JSON.parse(JSON.stringify(remote.points));
+    else{
+      base.points.total=Math.max(base.points.total||0,remote.points.total||0);
+      base.points.streak=Math.max(base.points.streak||0,remote.points.streak||0);
+      base.points.last=Math.max(base.points.last||0,remote.points.last||0);
+      base.points.ms={...(remote.points.ms||{}),...(base.points.ms||{})};
+      const lm={};
+      (remote.points.logs||[]).forEach(x=>lm[(x.date||0)+'|'+(x.pts||0)+'|'+(x.note||'')]=x);
+      (base.points.logs||[]).forEach(x=>lm[(x.date||0)+'|'+(x.pts||0)+'|'+(x.note||'')]=x);
+      base.points.logs=Object.values(lm).sort((a,b)=>(a.date||0)-(b.date||0));
+    }
+  }
+  // calc: 取 lastDate 更新
+  if(remote.calc && (!base.calc || (remote.calc.lastDate||'') > (base.calc.lastDate||''))) base.calc=remote.calc;
+  return base;
+}
+async function ghPush(confirmFirst){
+  const c=ghCfg();if(!c.tok){toast('请先填写 Token');return;}
+  if(confirmFirst && !confirm('将本机数据与云端合并后上传，继续？')) return;
+  const btn=$('#btnPush');if(btn){btn.disabled=true;btn.textContent='上传中…';}
+  ghLog('开始上传：读取云端…');
+  try{
+    let remote=null;
+    try{remote=await ghGetRemote(c);}catch(e){ghLog('读取云端失败：'+e.message,'#c0392b');}
+    const local=store.cur;
+    let merged;
+    if(remote){
+      ghLog('云端已有数据（'+(remote.data.records||[]).length+' 条记录），合并中…');
+      merged=mergeUsers(local,remote.data);
+    }else{
+      ghLog('云端无此用户数据，首次上传');
+      merged=local;
+    }
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(merged,null,2))));
+    const body={message:'sync '+new Date().toISOString(), content, branch:'main'};
+    if(remote) body.sha=remote.sha;
+    const r=await fetch(`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${c.path}`,{
+      method:'PUT', headers:{Authorization:'token '+c.tok,Accept:'application/vnd.github+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(r.ok){
+      const j=await r.json();
+      ghLog('上传成功：commit '+j.commit.sha.slice(0,7),'#2e9e5b');
+      toast('已同步到云端');
+    }else{
+      const j=await r.json().catch(()=>({}));
+      ghLog('上传失败：'+r.status+' '+(j.message||''),'#c0392b');
+    }
+  }catch(e){ghLog('上传异常：'+e.message,'#c0392b');}
+  if(btn){btn.disabled=false;btn.textContent='同步到云端（上传合并）';}
+}
+async function ghPull(confirmFirst){
+  const c=ghCfg();if(!c.tok){toast('请先填写 Token');return;}
+  if(confirmFirst && !confirm('将云端数据合并到本机，继续？')) return;
+  const btn=$('#btnPull');if(btn){btn.disabled=true;btn.textContent='拉取中…';}
+  ghLog('开始拉取…');
+  try{
+    const remote=await ghGetRemote(c);
+    if(!remote){ghLog('云端无此用户数据','#c0392b');toast('云端无数据');return;}
+    ghLog('云端数据：'+(remote.data.records||[]).length+' 条记录，合并到本机…');
+    const merged=mergeUsers(store.cur,remote.data);
+    store.data.data[store.data.active]=merged;
+    store.cur=merged;
+    store.save();
+    ghLog('拉取合并完成，本机已更新','#2e9e5b');
+    toast('已从云端拉取');
+    vSettings();
+  }catch(e){ghLog('拉取异常：'+e.message,'#c0392b');}
+  if(btn){btn.disabled=false;btn.textContent='从云端拉取（合并到本机）';}
 }
 function setGrade(g){D.profile.grade=g;store.save();vSettings();}
 function exportData(){
