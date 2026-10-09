@@ -5788,8 +5788,9 @@ async function ghPush(confirmFirst){
       ghLog('云端无此用户数据，首次上传');
       merged=local;
     }
-    merged.avatar=store.curUser().avatar||merged.avatar||'';
-    ghLog(merged.avatar?'头像已包含（'+Math.round(merged.avatar.length/1024)+'KB）':'未设置头像');
+    const localAv=store.curUser().avatar||store.cur.avatar||'';
+    merged.avatar=localAv||merged.avatar||'';
+    ghLog(merged.avatar?'头像已包含（'+Math.round(merged.avatar.length/1024)+'KB）':'未设置头像（localAv='+(localAv?'有':'空')+'）');
     const content=btoa(unescape(encodeURIComponent(JSON.stringify(merged,null,2))));
     const body={message:'sync '+new Date().toISOString(), content, branch:'main'};
     if(remote) body.sha=remote.sha;
