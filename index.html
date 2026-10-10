@@ -207,6 +207,12 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
   .bar-cell{grid-template-columns:92px 1fr 40px}
 }
 </style>
+<script>
+window.onerror=function(m,u,l){
+  var v=document.getElementById('view');
+  if(v){v.innerHTML='<div style="padding:40px;text-align:center;color:#ff3b30"><p>错误：'+m+'</p><p style="font-size:12px;color:#86868b;margin-top:8px">行'+l+'</p></div>';}
+};
+</script>
 </head>
 <body>
 <div class="desktop-layout">
@@ -246,13 +252,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
 
 <script>
 'use strict';
-window.onerror=function(msg,url,line){
-  var v=document.getElementById('view');
-  if(v && !v.innerHTML){
-    v.innerHTML='<div style="padding:40px;text-align:center;color:#ff3b30"><p>加载错误：'+msg+'</p><p style="font-size:13px;color:#86868b;margin-top:8px">行号：'+line+'</p></div>';
-  }
-  return false;
-};
+// error handler in head
 /* ============================================================
    题库数据（原创变式题，对标《实验班提优训练》基础提优层与
    《学霸》拔高层出题逻辑，全部为自主原创，规避版权风险）
