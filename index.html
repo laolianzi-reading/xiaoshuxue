@@ -4443,6 +4443,17 @@ const QMAP={}; const CHAP={};
     (BANK.topics.list||[]).forEach(tp=>{ if(tp.grade==='g7') tp.qs.forEach(fixSymbols); });
     // 对g7试卷题目做符号标准化
     (BANK.exams||[]).forEach(ex=>{ if(ex.grade==='g7') ex.secs.forEach(sec=>sec.qs.forEach(fixSymbols)); });
+    // 统一新定义运算符号：⊕和⊗替换为*
+    function fixOp(q){
+      ['q','a','s','e'].forEach(k=>{
+        if(typeof q[k]==='string'){
+          q[k]=q[k].replace(/⊕/g,'*').replace(/⊗/g,'*');
+        }
+      });
+    }
+    BANK.g7.list.forEach(ch=>ch.qs.forEach(fixOp));
+    (BANK.topics.list||[]).forEach(tp=>{ if(tp.grade==='g7') tp.qs.forEach(fixOp); });
+    (BANK.exams||[]).forEach(ex=>{ if(ex.grade==='g7') ex.secs.forEach(sec=>sec.qs.forEach(fixOp)); });
   })();
   const grades=['g7','g8','g9'];
   grades.forEach(g=>{const gr=BANK[g];(gr.list||[]).forEach(ch=>{ch.grade=g;ch.qs.forEach((q,i)=>{q.id=ch.id+'-'+(i+1);q.cat=ch.id;q.grade=g;QMAP[q.id]=q;});CHAP[ch.id]=ch;});});
