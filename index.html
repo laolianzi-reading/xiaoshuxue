@@ -254,8 +254,7 @@ window.onerror=function(msg,url,line){
   return false;
 };
 /* ============================================================
-   题库数据（原创变式题，对标《实验班提优训练》基础提优层与
-   《学霸》拔高层出题逻辑，全部为自主原创，规避版权风险）
+   题库数据（原创变式题，对标主流培优教辅基础提优层与拔高层出题逻辑，全部为自主原创）
    题型 t: c=选择 f=填空 a=解答
    d: 难度1-5  l: 层级  k: 知识点  dom: 知识领域
    h: 芜湖中考高频标记  trap: 陷阱类型标签
@@ -4749,7 +4748,7 @@ function vHome(){
   V.innerHTML=`
   <section class="hero">
     <h1>小数学 · 芜湖中考数学 145+ 提分工具</h1>
-    <p>依托人教版新课标 7–9 年级教材体系，融合《实验班提优训练》与《学霸》两套培优教辅的出题逻辑与难度梯度，深挖芜湖中考（安徽统一命题）考情与命题规律，分层刷题 · 智能诊断 · 错题突破 · 套卷冲刺。</p>
+    <p>依托人教版新课标 7–9 年级教材体系，融合主流培优教辅的出题逻辑与难度梯度，深挖芜湖中考（安徽统一命题）考情与命题规律，分层刷题 · 智能诊断 · 错题突破 · 套卷冲刺。</p>
     <div class="bank-stat">题库总量 <b>${layN+examN}</b> 题 · 分层练习 ${layN} 题 · 套卷模考 ${examN} 题</div>
     <div class="cta">
       <button class="btn" onclick="location.hash='#/practice'">开始分层练习</button>
@@ -4763,13 +4762,13 @@ function vHome(){
       <div class="card mode-card" onclick="location.hash='#/practice'">
         <div class="ic" style="background:var(--primary-l)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1555a6" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
         <h3>基础巩固模式</h3>
-        <p>对标《实验班提优训练》基础层：课内同步章节，夯实知识点，简单题零失误训练，守住 105 分基础盘。每次进入智能动态组卷，错哪补哪。</p>
+        <p>对标主流培优教辅基础层：课内同步章节，夯实知识点，简单题零失误训练，守住 105 分基础盘。每次进入智能动态组卷，错哪补哪。</p>
         <div class="go">进入练习 →</div>
       </div>
       <div class="card mode-card" onclick="location.hash='#/practice'">
         <div class="ic" style="background:var(--teal-l)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0b6b5d" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
         <h3>专题突破模式</h3>
-        <p>对标《学霸》拔高层：动点、二次函数综合、翻折旋转、新定义、最值、圆综合八大专题，攻克中档与压轴失分点。支持按薄弱模型加权的同类变式推送。</p>
+        <p>对标拔高层：动点、二次函数综合、翻折旋转、新定义、最值、圆综合八大专题，攻克中档与压轴失分点。支持按薄弱模型加权的同类变式推送。</p>
         <div class="go">进入练习 →</div>
       </div>
       <div class="card mode-card" onclick="location.hash='#/exam'">
@@ -5198,7 +5197,7 @@ function finishCalcReview(){
 /* ============ 分层练习（选模式→选范围→开练） ============ */
 function vPractice(){
   const basicGrades=['g7','g8','g9'];
-  let html=`<h1 class="page-title">分层练习</h1><p class="page-sub">基础巩固对标《实验班提优训练》基础·提优层；专题突破对标《学霸》拔高层，直击芜湖中考压轴失分点。</p>
+  let html=`<h1 class="page-title">分层练习</h1><p class="page-sub">基础巩固对标培优教辅基础·提优层；专题突破对标拔高层，直击芜湖中考压轴失分点。</p>
   <div class="step-tabs">
     <span class="step ${pState.mode?'':'on'}">1 选择模式</span>
     <span class="step ${pState.mode&&!pState.chosen.length?'on':''}">2 选择范围</span>
@@ -5695,7 +5694,7 @@ function vSettings(){
         <button class="btn btn-sm" style="background:var(--bad);color:#fff" onclick="resetData()">清空全部数据</button>
       </div></div>
     <div style="font-size:12.5px;color:var(--sub);line-height:1.8">
-      工具说明：题库为自主原创变式题，仅借鉴《实验班提优训练》《学霸》两套教辅的章节体系、难度梯度与出题逻辑，不含任何教辅原题；内容适配芜湖中考（安徽统一命题）考情。
+      工具说明：题库为自主原创变式题，借鉴主流教辅的章节体系、难度梯度与出题逻辑，不含任何教辅原题；内容适配芜湖中考（安徽统一命题）考情。
     </div>
   </div>`;
   const inp=$('#inName');if(inp)inp.onchange=()=>{D.profile.name=inp.value.trim();store.save();toast('已保存');};
