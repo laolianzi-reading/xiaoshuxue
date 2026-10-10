@@ -231,7 +231,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
         <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
-    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v44</div></main>
+    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v45</div></main>
     <div class="foot">小数学 · 纯本地运行 · 学习数据仅保存在本机浏览器，不上传云端</div>
   </div>
 </div>
@@ -4293,8 +4293,8 @@ const QMAP={}; const CHAP={};
     function fixSymbols(q){
       ['q','a','s','e'].forEach(k=>{
         if(typeof q[k]==='string'){
-          q[k]=q[k].replace(/\(-(\d)/g,'(−$1)');
-          q[k]=q[k].replace(/\+(-\d)/g,'+(−$1)');
+          q[k]=q[k].replace(/\(-(\d)/g,'(−$1');
+          q[k]=q[k].replace(/\+(-\d)/g,'+(−$1');
           // 修复解析中数字间的ASCII减号
           q[k]=q[k].replace(/(\d)-(\d)/g,'$1−$2');
           // 修复范围 1-6 → 1～6
@@ -4326,6 +4326,23 @@ const QMAP={}; const CHAP={};
     BANK.g7.list.forEach(ch=>ch.qs.forEach(fixOp));
     (BANK.topics.list||[]).forEach(tp=>{ if(tp.grade==='g7') tp.qs.forEach(fixOp); });
     (BANK.exams||[]).forEach(ex=>{ if(ex.grade==='g7') ex.secs.forEach(sec=>sec.qs.forEach(fixOp)); });
+  })();
+  // ===== 符号标准化完成后再次去重：统一文本后合并同章节内完全相同的题（含 ASCII/Unicode 双版本） =====
+  (function(){
+    const uniqByQ=arr=>{
+      const seen={};
+      return arr.filter(q=>{const key=q.q;seen[key]=(seen[key]||0)+1;return seen[key]<=1;});
+    };
+    ['g7','g8','g9'].forEach(g=>{(BANK[g].list||[]).forEach(ch=>{ch.qs=uniqByQ(ch.qs);});});
+    (BANK.topics.list||[]).forEach(tp=>{tp.qs=uniqByQ(tp.qs);});
+    (BANK.exams||[]).forEach(ex=>{ex.secs.forEach(sec=>{sec.qs=uniqByQ(sec.qs);});});
+  })();
+  // ===== 显示口径：每章/专题/试卷统计题干完全去重后的有效题数（页面显示与实际可抽题数一致） =====
+  (function(){
+    const uniqN=arr=>{const s=new Set();arr.forEach(q=>s.add(String(q.q||'').trim()));return s.size;};
+    (BANK.g7.list||[]).concat(BANK.g8.list||[],BANK.g9.list||[]).forEach(ch=>{ch.qsN=uniqN(ch.qs);});
+    (BANK.topics.list||[]).forEach(tp=>{tp.qsN=uniqN(tp.qs);});
+    (BANK.exams||[]).forEach(ex=>{ex.qsN=ex.secs.reduce((s,sec)=>s+uniqN(sec.qs),0);});
   })();
   const grades=['g7','g8','g9'];
   grades.forEach(g=>{const gr=BANK[g];(gr.list||[]).forEach(ch=>{ch.grade=g;ch.qs.forEach((q,i)=>{q.id=ch.id+'-'+(i+1);q.cat=ch.id;q.grade=g;QMAP[q.id]=q;});CHAP[ch.id]=ch;});});
