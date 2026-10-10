@@ -4331,9 +4331,12 @@ const QMAP={}; const CHAP={};
     function fixSymbols(q){
       ['q','a','s','e'].forEach(k=>{
         if(typeof q[k]==='string'){
-          // 把 (-n) 中的 - 替换为 −（仅在数字前的减号）
           q[k]=q[k].replace(/\(-(\d)/g,'(−$1)');
           q[k]=q[k].replace(/\+(-\d)/g,'+(−$1)');
+          // 修复解析中数字间的ASCII减号
+          q[k]=q[k].replace(/(\d)-(\d)/g,'$1−$2');
+          // 修复范围 1-6 → 1～6
+          q[k]=q[k].replace(/(\d)-(\d)(?=[，。．、）\s]|$)/g,'$1～$2');
         }
       });
     }
@@ -4434,6 +4437,12 @@ const QMAP={}; const CHAP={};
       );
       c2.qs.forEach(fixSymbols);
     }
+    // 对g7所有章节题目做符号标准化
+    BANK.g7.list.forEach(ch=>ch.qs.forEach(fixSymbols));
+    // 对g7专题题目做符号标准化
+    (BANK.topics.list||[]).forEach(tp=>{ if(tp.grade==='g7') tp.qs.forEach(fixSymbols); });
+    // 对g7试卷题目做符号标准化
+    (BANK.exams||[]).forEach(ex=>{ if(ex.grade==='g7') ex.secs.forEach(sec=>sec.qs.forEach(fixSymbols)); });
   })();
   const grades=['g7','g8','g9'];
   grades.forEach(g=>{const gr=BANK[g];(gr.list||[]).forEach(ch=>{ch.grade=g;ch.qs.forEach((q,i)=>{q.id=ch.id+'-'+(i+1);q.cat=ch.id;q.grade=g;QMAP[q.id]=q;});CHAP[ch.id]=ch;});});
