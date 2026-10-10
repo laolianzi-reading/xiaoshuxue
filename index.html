@@ -4443,11 +4443,13 @@ const QMAP={}; const CHAP={};
     (BANK.topics.list||[]).forEach(tp=>{ if(tp.grade==='g7') tp.qs.forEach(fixSymbols); });
     // 对g7试卷题目做符号标准化
     (BANK.exams||[]).forEach(ex=>{ if(ex.grade==='g7') ex.secs.forEach(sec=>sec.qs.forEach(fixSymbols)); });
-    // 统一新定义运算符号：*和*替换为*
+    // 新定义运算符：把*替换为※（避免和普通乘法混淆）
     function fixOp(q){
       ['q','a','s','e'].forEach(k=>{
         if(typeof q[k]==='string'){
-          q[k]=q[k].replace(/*/g,'*').replace(/*/g,'*');
+          if(/定义|规定|新运算/.test(q.q||'')){
+            q[k]=q[k].replace(/([a-z0-9)])\*([a-z0-9(])/g,'$1※$2');
+          }
         }
       });
     }
