@@ -231,7 +231,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
         <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
-    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v46</div></main>
+    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v47</div></main>
     <div class="foot">小数学 · 纯本地运行 · 学习数据仅保存在本机浏览器，不上传云端</div>
   </div>
 </div>
@@ -260,7 +260,8 @@ window.onerror=function(msg,url,line){
    h: 芜湖中考高频标记  trap: 陷阱类型标签
    p: 解答题得分要点 [[说明,分值],...]
 ============================================================ */
-setTimeout(function(){var v=document.getElementById('view');if(v&&v.innerHTML.indexOf('加载中')>=0){v.innerHTML='<div style="padding:40px;text-align:center;color:#86868b;font-size:14px">题库加载中，请稍候…</div>';}},150);
+window.onerror=function(m,s,l){try{var v=document.getElementById('view');if(v)v.innerHTML='<div style="padding:40px;text-align:center;color:#ff3b30"><p style="font-weight:600">脚本错误</p><p style="font-size:13px">'+String(m)+'</p><p style="font-size:12px;color:#86868b">行 '+l+'</p></div>';}catch(e){}};
+var _bm=function(s){try{var v=document.getElementById('view');if(v)v.innerHTML='<div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中 v47 · '+s+'…</div>';}catch(e){}};
 const BANK={
   g7:{name:"七年级",list:[
     {id:"g7-1",name:"有理数",dom:"数与式",qs:[
@@ -3659,12 +3660,15 @@ function ptsExamReward(score,max){
   return 0;
 }
 
+_bm('初始化');
 let D=null;try{D=store.load();}catch(e){D=store.emptyUser();console.error('load失败',e);}
+_bm('数据加载');
 
 /* ============ 题库索引 ============ */
 const QMAP={}; const CHAP={};
 (function(){
   // ===== 新增原创变式题（2026-09 批次）=====
+_bm('题库构建');
   const NEW_Q={
     "g7-1":[],
     "g7-2":[],
@@ -4759,6 +4763,7 @@ let calcTimer=null;
 // 计算题库（分阶段·去重版）
 // 计算题库（分阶段·去重版）
 // 计算题库（分阶段·去重版）
+_bm('计算题库');
 const CALC_BANK={"g7-1":[{"t":"f","d":1,"l":"普通","k":"有理数乘加混合","m":"计算","f":["计算题"],"stage":"g7-1","q":"计算：−9×16+9","o":[],"a":"-135","p":"先乘：−9×16=−144；再加9：-135","s":"先乘：−9×16=−144；再加9：-135","e":"先乘除后加减，注意负号。"},
 {"t":"f","d":1,"l":"普通","k":"有理数乘加混合","m":"计算","f":["计算题"],"stage":"g7-1","q":"计算：−13×20-2","o":[],"a":"-262","p":"先乘：−13×20=−260；再减2：-262","s":"先乘：−13×20=−260；再减2：-262","e":"先乘除后加减，注意负号。"},
 {"t":"f","d":1,"l":"普通","k":"有理数乘加混合","m":"计算","f":["计算题"],"stage":"g7-1","q":"计算：−12×19-17","o":[],"a":"-245","p":"先乘：−12×19=−228；再减17：-245","s":"先乘：−12×19=−228；再减17：-245","e":"先乘除后加减，注意负号。"},
@@ -6060,6 +6065,7 @@ const CALC_BANK={"g7-1":[{"t":"f","d":1,"l":"普通","k":"有理数乘加混合"
 {"t":"f","d":5,"l":"挑战","k":"实际应用","m":"计算","f":["计算题"],"stage":"g9-4","q":"沿 30° 坡度的斜坡前进 52 米，上升了____米","o":[],"a":"26","p":"上升=前进×sin30°=52×1/2=26 米。","s":"上升=前进×sin30°=52×1/2=26 米。","e":"坡度问题画直角三角形。"},
 {"t":"f","d":5,"l":"挑战","k":"实际应用","m":"计算","f":["计算题"],"stage":"g9-4","q":"沿 30° 坡度的斜坡前进 76 米，上升了____米","o":[],"a":"38","p":"上升=前进×sin30°=76×1/2=38 米。","s":"上升=前进×sin30°=76×1/2=38 米。","e":"坡度问题画直角三角形。"}]};
 window.addEventListener('hashchange',()=>{try{render((location.hash||'#/home').replace('#/',''));}catch(e){document.getElementById('view').innerHTML='<div style="padding:40px;text-align:center;color:#ff3b30"><p>页面加载出错：'+e.message+'</p><p style="font-size:13px;color:#86868b;margin-top:10px">请尝试刷新页面，或换用Chrome浏览器</p></div>';}});
+_bm('渲染');
 try{render((location.hash||'#/home').replace('#/',''));}catch(e){document.getElementById('view').innerHTML='<div style="padding:40px;text-align:center;color:#ff3b30"><p>页面加载出错：'+e.message+'</p><p style="font-size:13px;color:#86868b;margin-top:10px">请尝试刷新页面，或换用Chrome浏览器</p></div>';console.error(e);}
 
 /* ============ 导航栏学段切换 ============ */
