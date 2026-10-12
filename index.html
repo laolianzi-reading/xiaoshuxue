@@ -231,7 +231,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
         <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
-    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v48</div></main>
+    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v49</div></main>
     <div class="foot">小数学 · 纯本地运行 · 学习数据仅保存在本机浏览器，不上传云端</div>
   </div>
 </div>
@@ -3576,9 +3576,11 @@ const store={
     this.save();
     return this.cur;},
   _fixMojibake(){
-    const fix=s=>{if(typeof s!=='string'||!s)return s;if(!/[\u00c0-\u00ff]/.test(s))return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s)return f;}catch(e){}return s;};
+    let _dirty=false;
+    const fix=s=>{if(typeof s!=='string'||!s)return s;if(!/[\u00c0-\u00ff]/.test(s))return s;try{const bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)&0xFF;const f=new TextDecoder('utf-8',{fatal:false}).decode(bytes);if(f!==s){_dirty=true;return f;}}catch(e){}return s;};
     const walk=o=>{if(typeof o==='string')return fix(o);if(Array.isArray(o))return o.map(walk);if(o&&typeof o==='object'){for(const k in o)o[k]=walk(o[k]);}return o;};
     walk(this.data);
+    if(_dirty)this.save();
   },
   save(){try{localStorage.setItem(DBK2,JSON.stringify(this.data));}catch(e){console.warn('保存失败',e);}},
   reset(){const c=this.cur,e=this.emptyUser();c.profile=e.profile;c.records=e.records;c.wrongs=e.wrongs;c.sessions=e.sessions;if('md' in c)delete c.md;if('lastSet' in c)delete c.lastSet;this.save();},
