@@ -231,7 +231,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
         <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
-    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v52</div></main>
+    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v53</div></main>
     <div class="foot">小数学 · 纯本地运行 · 学习数据仅保存在本机浏览器，不上传云端</div>
   </div>
 </div>
@@ -6786,7 +6786,11 @@ function startTimer(){
 function submitQuiz(auto){
   if(!sess)return;
   const unanswered=sess.items.filter(id=>{const a=sess.answers[id];return !a||a.v===null||a.v==='';}).length;
-  if(unanswered>0&&!auto){if(!confirm('还有 '+unanswered+' 题未作答，确定提交？'))return;}
+  const total=sess.items.length;
+  const emptyRate=total>0?unanswered/total:0;
+  if(!auto&&emptyRate>0.5){
+    if(!confirm('还有 '+unanswered+' 题未作答（超过一半），确定要提交吗？未作答的题目将记为 0 分。'))return;
+  }
   if(timerInt)clearInterval(timerInt);
   const out=commitSession();
   if(out){renderResult(out);}
