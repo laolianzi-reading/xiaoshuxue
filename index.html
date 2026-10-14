@@ -231,7 +231,7 @@ textarea.q-input{min-height:110px;resize:vertical;line-height:1.7}
         <a class="user-chip" id="userChip" href="#/users" style="text-decoration:none"></a>
       </div>
     </div>
-    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v54</div></main>
+    <main id="view" class="wrap"><div style="padding:40px;text-align:center;color:#86868b;font-size:14px">加载中… v55</div></main>
     <div class="foot">小数学 · 纯本地运行 · 学习数据仅保存在本机浏览器，不上传云端</div>
   </div>
 </div>
@@ -3661,6 +3661,7 @@ function checkin(){
   return {ok:true,daily:daily,streak:p.streak,msPts:msPts,total:p.total};
 }
 function checkinBtn(){const r=checkin();toast(r.ok?('签到成功：+'+r.daily+' 积分'+(r.msPts?'，里程碑额外 +'+r.msPts+' 积分':'')):r.msg);render('users');}
+function homeCheckin(){const r=checkin();toast(r.ok?('签到成功：+'+r.daily+' 积分'+(r.msPts?'，里程碑额外 +'+r.msPts+' 积分':'')):r.msg);render('home');}
 function clearPointsAsk(){
   const p=ptsGet();if(p.total<=0){toast('当前积分为 0，无需清零');return;}
   if(!confirm('确定一键清零积分？当前 '+p.total+' 积分将归零。清零事件将永久保留在积分明细中，连续签到天数与里程碑领取状态不受影响。'))return;
@@ -6101,6 +6102,8 @@ function vHome(){
   let layN=0;['g7','g8','g9'].forEach(g=>{((qb[g]||{}).list||[]).forEach(ch=>layN+=(ch.qs||[]).length);});
   layN+=((qb.topics||{}).list||[]).reduce((s,tp)=>s+(tp.qs||[]).length,0);
   const examN=(qb.exams||[]).reduce((s,e)=>s+(e.qs?e.qs.length:e.secs.reduce((t,sc)=>t+(sc.qs||[]).length,0)),0);
+  const p=ptsGet();const today=ptsToday();const checkedIn=p.last===today;
+  const dailyPts=p.streak<=3?2:(p.streak<=10?5:(p.streak<=14?8:10));
   V.innerHTML=`
   <section class="hero">
     <h1>小数学 · 芜湖中考数学 145+ 提分工具</h1>
@@ -6109,6 +6112,22 @@ function vHome(){
     <div class="cta">
       <button class="btn" onclick="location.hash='#/practice'">开始分层练习</button>
       <button class="btn ghost" onclick="location.hash='#/exam'">进入套卷模考</button>
+    </div>
+  </section>
+
+  <section class="sect" style="margin-bottom:8px">
+    <div class="card" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:18px 22px;background:linear-gradient(135deg,#f0f7ff,#fef6e9)">
+      <div style="font-size:32px;font-weight:700;color:var(--primary-d);min-width:80px;text-align:center">
+        ${p.streak}<small style="font-size:13px;font-weight:400;color:var(--sub)"> 天</small>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div style="font-weight:600;font-size:15px">连续签到 ${p.streak} 天</div>
+        <div style="font-size:12.5px;color:var(--sub);margin-top:3px">今日可领 <b style="color:#b26a14">+${dailyPts}</b> 积分 · 坚持打卡，15 天起每日 +10</div>
+      </div>
+      ${checkedIn
+        ? '<span class="tag" style="background:#e8f5e9;color:#2e9e5b;padding:6px 14px">今日已签到 ✓</span>'
+        : '<button class="btn btn-primary" onclick="homeCheckin()">立即签到</button>'
+      }
     </div>
   </section>
 
